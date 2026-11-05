@@ -19,21 +19,13 @@ public class SpartansTeleOp extends LinearOpMode {
         DcMotor backLeft = hardwareMap.get(DcMotor.class, "back_left_drive");
         DcMotor backRight = hardwareMap.get(DcMotor.class, "back_right_drive");
 
-        // Two hex intake motors. These names must match your Hub configuration.
-        DcMotor intakeLeft = hardwareMap.get(DcMotor.class, "intake_left");
-        DcMotor intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
-        intakeLeft.setPower(0);
-        intakeRight.setPower(0);
-
-        // Starting guess for mirrored motors. Check EACH roller pulls inward.
-        // If one roller pushes outward, flip only that motor's direction here.
-        // Keep these directions the same in the test and driving programs.
-        intakeLeft.setDirection(DcMotor.Direction.FORWARD);
-        intakeRight.setDirection(DcMotor.Direction.REVERSE);
-        intakeLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intakeRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // One DC intake motor. This name must match your Hub configuration.
+        DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        intake.setPower(0);
+        // If positive power pushes pieces OUT, change FORWARD to REVERSE here.
+        intake.setDirection(DcMotor.Direction.FORWARD);
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Starting assumption: reverse the left side. Check this on your robot.
         // Change REVERSE to FORWARD (or vice versa) if a wheel runs backward.
@@ -115,10 +107,7 @@ public class SpartansTeleOp extends LinearOpMode {
                 } else if (eject && !collect) {
                     intakePower = -gamepad2.left_trigger * INTAKE_MAX_POWER;
                 }
-                // Both motors receive the same command. Their direction settings
-                // above account for the way each motor is physically mounted.
-                intakeLeft.setPower(intakePower);
-                intakeRight.setPower(intakePower);
+                intake.setPower(intakePower);
                 telemetry.addData("Intake power", intakePower);
 
                 // These numbers help you check that every encoder is connected.
@@ -131,8 +120,7 @@ public class SpartansTeleOp extends LinearOpMode {
             }
         } finally {
             // Always stop the intake and wheels when this program ends.
-            intakeLeft.setPower(0);
-            intakeRight.setPower(0);
+            intake.setPower(0);
             frontLeft.setPower(0);
             frontRight.setPower(0);
             backLeft.setPower(0);

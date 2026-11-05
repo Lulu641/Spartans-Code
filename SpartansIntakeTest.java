@@ -13,21 +13,13 @@ public class SpartansIntakeTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        // Two hex intake motors. These names must match your Hub configuration.
-        DcMotor intakeLeft = hardwareMap.get(DcMotor.class, "intake_left");
-        DcMotor intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
-        intakeLeft.setPower(0);
-        intakeRight.setPower(0);
-
-        // Starting guess for mirrored motors. Check EACH roller pulls inward.
-        // If one roller pushes outward, flip only that motor's direction here.
-        // Keep these directions the same in the test and driving programs.
-        intakeLeft.setDirection(DcMotor.Direction.FORWARD);
-        intakeRight.setDirection(DcMotor.Direction.REVERSE);
-        intakeLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intakeRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // Configure your actual intake motor with this exact name.
+        DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        intake.setPower(0);
+        // Change FORWARD to REVERSE if collecting spins the wrong way.
+        intake.setDirection(DcMotor.Direction.FORWARD);
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         telemetry.addLine("GAMEPAD 1: right trigger = collect, left trigger = eject.");
         telemetry.addLine("Release both triggers to stop. Both together also stop.");
@@ -42,25 +34,20 @@ public class SpartansIntakeTest extends LinearOpMode {
                 boolean eject = gamepad1.left_trigger > 0.05;
                 double intakePower = 0;
 
-                // Positive power collects; negative power reverses both rollers.
+                // Positive power collects; negative power runs the motor backward.
                 if (collect && !eject) {
                     intakePower = gamepad1.right_trigger * INTAKE_MAX_POWER;
                 } else if (eject && !collect) {
                     intakePower = -gamepad1.left_trigger * INTAKE_MAX_POWER;
                 }
 
-                // Both motors receive the same command. Their direction settings
-                // above account for the way each motor is physically mounted.
-                intakeLeft.setPower(intakePower);
-                intakeRight.setPower(intakePower);
+                intake.setPower(intakePower);
                 telemetry.addData("Intake power", intakePower);
                 telemetry.update();
                 idle();
             }
         } finally {
-            // Turn off BOTH intake motors when the program ends.
-            intakeLeft.setPower(0);
-            intakeRight.setPower(0);
+            intake.setPower(0); // Turn off the motor when you press STOP or the code exits.
         }
     }
 }
