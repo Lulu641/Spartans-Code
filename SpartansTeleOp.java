@@ -8,6 +8,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @TeleOp(name = "Spartans TeleOp", group = "Spartans")
 public class SpartansTeleOp extends LinearOpMode {
 
+    // Change this after testing how fast your actual intake should run.
+    private static final double INTAKE_MAX_POWER = 0.60;
+
     @Override
     public void runOpMode() throws InterruptedException {
         // These names MUST match the motor names in your robot configuration.
@@ -15,6 +18,22 @@ public class SpartansTeleOp extends LinearOpMode {
         DcMotor frontRight = hardwareMap.get(DcMotor.class, "front_right_drive");
         DcMotor backLeft = hardwareMap.get(DcMotor.class, "back_left_drive");
         DcMotor backRight = hardwareMap.get(DcMotor.class, "back_right_drive");
+
+        // Two hex intake motors. These names must match your Hub configuration.
+        DcMotor intakeLeft = hardwareMap.get(DcMotor.class, "intake_left");
+        DcMotor intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
+        intakeLeft.setPower(0);
+        intakeRight.setPower(0);
+
+        // Starting guess for mirrored motors. Check EACH roller pulls inward.
+        // If one roller pushes outward, flip only that motor's direction here.
+        // Keep these directions the same in the test and driving programs.
+        intakeLeft.setDirection(DcMotor.Direction.FORWARD);
+        intakeRight.setDirection(DcMotor.Direction.REVERSE);
+        intakeLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intakeRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Starting assumption: reverse the left side. Check this on your robot.
         // Change REVERSE to FORWARD (or vice versa) if a wheel runs backward.
@@ -40,7 +59,8 @@ public class SpartansTeleOp extends LinearOpMode {
         backLeft.setPower(0);
         backRight.setPower(0);
 
-        telemetry.addLine("Ready. Check hardware names and directions before driving.");
+        telemetry.addLine("Ready. Check motor names and directions before driving.");
+        telemetry.addLine("Gamepad 2: right trigger = intake, left trigger = reverse.");
         telemetry.update();
 
         try {
@@ -84,6 +104,23 @@ public class SpartansTeleOp extends LinearOpMode {
                 backLeft.setPower(backLeftPower * speed);
                 backRight.setPower(backRightPower * speed);
 
+                // Intake uses GAMEPAD 2 so the driver can keep driving normally.
+                // Hold right trigger to collect, or left trigger to spit pieces out.
+                // Releasing both (or pressing both) stops the intake.
+                double intakePower = 0;
+                boolean collect = gamepad2.right_trigger > 0.05;
+                boolean eject = gamepad2.left_trigger > 0.05;
+                if (collect && !eject) {
+                    intakePower = gamepad2.right_trigger * INTAKE_MAX_POWER;
+                } else if (eject && !collect) {
+                    intakePower = -gamepad2.left_trigger * INTAKE_MAX_POWER;
+                }
+                // Both motors receive the same command. Their direction settings
+                // above account for the way each motor is physically mounted.
+                intakeLeft.setPower(intakePower);
+                intakeRight.setPower(intakePower);
+                telemetry.addData("Intake power", intakePower);
+
                 // These numbers help you check that every encoder is connected.
                 telemetry.addData("Front left encoder", frontLeft.getCurrentPosition());
                 telemetry.addData("Front right encoder", frontRight.getCurrentPosition());
@@ -93,7 +130,9 @@ public class SpartansTeleOp extends LinearOpMode {
                 idle(); // Give the rest of the FTC app time to run.
             }
         } finally {
-            // Always stop the motors when this program ends.
+            // Always stop the intake and wheels when this program ends.
+            intakeLeft.setPower(0);
+            intakeRight.setPower(0);
             frontLeft.setPower(0);
             frontRight.setPower(0);
             backLeft.setPower(0);
