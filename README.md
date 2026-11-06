@@ -1,40 +1,54 @@
-# Spartans-Code
-Official FTC Spartans robotics software repository featuring Java-based drivetrain controls, autonomous navigation, sensor integration, and competition code.
+# Spartans — Mecanum Drive Only
 
+`SpartansTeleOp.java` controls four mecanum drive motors. The intake is disabled in this version: there is no intake hardware lookup or intake power command. Gamepad 2 does nothing in this OpMode. You can leave the intake in your robot configuration; it is not required by this program.
 
-# Spartans-Code
+## Install
 
-## Two robot programs
+- Android Studio: replace the existing `SpartansTeleOp.java` in `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/` with the included file, then build and deploy your FTC SDK project.
+- OnBot Java: replace the contents of your existing `SpartansTeleOp.java` with the included source, or upload the file, then click **Build Everything**. The filename must be exactly `SpartansTeleOp.java` (capitalization matters).
+- Keep only one class named `org.firstinspires.ftc.teamcode.SpartansTeleOp`; do not leave duplicate copies in other folders. Paste actual Java, without the backslashes or `&#x20;` formatting from the chat text.
+- On Driver Station, select **Spartans Drive Only** under TeleOp. `SpartansIntakeTest` is a separate program that still operates the intake if you select it; do not select that test to drive. This download does not modify or include that separate file.
 
-- **SpartansTeleOp.java**: mecanum driving plus one intake motor.
-- **SpartansAuto.java**: a basic encoder driving routine, currently disabled.
+## Configuration
 
-The Java files are inside `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/`.
+Match these four motor names exactly in your active robot configuration. Each name must point to its actual wheel location, viewed with the robot's front facing forward:
 
-## Controls
+| Wheel | Configuration name |
+| --- | --- |
+| Front left | `front_left_drive` |
+| Front right | `front_right_drive` |
+| Back left | `back_left_drive` |
+| Back right | `back_right_drive` |
 
-**Gamepad 1:** left stick drives/slides, right stick turns, left bumper slows down.
+Select the motor type that matches the physical motor label. This TeleOp uses open-loop motor power; it does not require encoder cables, encoder calibration, an IMU, or a fifth motor. Mecanum wheel rollers must form an **X when viewed from above**, as described in FIRST's sample.
 
-**Gamepad 2:** hold right trigger to collect; hold left trigger to eject. Release both, or press both together, to stop the intake.
+## Controls — Gamepad 1
 
-## Motor names
+- Left stick forward/back: drive forward/back.
+- Left stick left/right: slide left/right.
+- Right stick left/right: rotate counterclockwise/clockwise.
+- Hold left bumper: limit power to 25%; otherwise power is limited to 50%.
+- Release the sticks: command zero power with BRAKE behavior.
+- Driver Station STOP: exit the loop and command zero power.
 
-Use these exact names in the robot configuration, or change them in the code:
+Directions are relative to the robot, not the field. Normalization preserves the proportions between wheel commands during combined movements.
 
-- `front_left_drive`
-- `front_right_drive`
-- `back_left_drive`
-- `back_right_drive`
-- `intake` (one DC motor)
+## First check on the robot
 
-Check motor directions before driving. Intake power is limited to 60%, an untested starting setting. The exact motor model you called HDX still needs to be matched to its physical label in the robot configuration. Five DC motors need more ports than one Control Hub provides; the intake needs a free port on an additional supported motor controller, such as a configured Expansion Hub.
+1. Support the robot securely with all wheels off the ground. Keep hands clear of the wheels.
+2. Select **Spartans Drive Only**, press INIT, then START. With centered sticks, wheels should remain still.
+3. Hold the left bumper and gently push the left stick forward. All four wheels must turn so their bottom surfaces would push the floor backward, moving the robot forward.
+4. If a wheel turns backward, press STOP, flip that motor's `setDirection` between `FORWARD` and `REVERSE`, rebuild, and repeat. The supplied left-reversed/right-forward settings are a starting assumption.
+5. Test on clear floor at low input: forward, backward, strafe right, strafe left, then turn. If forward works but strafing does not, verify the configured wheel locations and the mecanum roller X pattern.
+6. Check that releasing the sticks and pressing STOP stop the motors before increasing speed.
 
-## Autonomous
+## Verification
 
-The demo drives forward 12 inches, then right 12 inches. It does not operate the intake. The example 537.7 encoder counts per output turn, 96 mm wheel diameter, 1:1 external gearing and 1.0 strafe correction are unverified. Check the actual motor/encoder model, wiring, directions and measured travel before removing `@Disabled`. It has a five-second timeout per move and stops on STOP; wheel slip and heading drift can affect accuracy.
+The included Java file compiled successfully against the real FTC RobotCore SDK **12.0.0**, using Java 8 source/target settings. Its extracted drive calculations passed nine directional/deadband/slow-mode checks and 10,000 mixed-input power-limit checks. A full Android app build, deployment, and physical robot testing have not been performed. Wiring, configured wheel locations, wheel installation, and motor directions must be checked on your robot.
 
-## Upload and use
+## Official references
 
-Unzip this download. Upload the contents of the inner `Spartans-Code` folder, keeping the folder paths. Replace older copies of the same two Java files. Remove the older `teamcode/spartans/` version if you are switching to these programs. If you uploaded `SpartansIntakeTest.java`, that separate test is optional and not needed by these two programs.
+- [FIRST four-motor mecanum/omni sample](https://github.com/FIRST-Tech-Challenge/FtcRobotController/blob/master/FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/BasicOmniOpMode_Linear.java)
+- [FIRST OnBot Java build and run guide](https://ftc-docs.firstinspires.org/en/latest/programming_resources/tutorial_specific/onbot_java/creating_op_modes/Creating-and-Running-an-Op-Mode-(OnBot-Java).html)
 
-This ZIP contains only your robot code and this guide. To build and run it, put these files into an existing FTC SDK Android Studio project. Both Java files already passed a compile check against FTC SDK v12.0. A full Android build and physical robot testing have not been completed.
+This ZIP contains the drive-only source and this guide. It is not a standalone FTC SDK Android Studio project.
